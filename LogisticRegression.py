@@ -88,7 +88,7 @@ labels = labels[arr]                  #随机数据的处理
 
 
 #数据集和验证集的划分
-ratio = 0.9
+ratio = 0.8
 s = np.int(num_example*ratio)
 train_data = data[:s]               #训练集的准备
 train_labels = labels[:s]

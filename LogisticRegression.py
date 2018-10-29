@@ -70,7 +70,7 @@ def deal_info(path):   #文件的处理，样本的优化
     cate = [path + x for x in os.listdir(path) if os.path.isdir(path + x)]
     for inx, floder in enumerate(cate):
         for im in glob.glob(floder+"/*.csv"):
-            label_temp = [0]*10   #初始化
+            label_temp = [0]*2   #初始化
             person_information = person_info(pd.read_csv(im, sep=",", skiprows=(0, 1)))
             train_data.append(person_information)
             label_temp[inx] = 1
@@ -98,10 +98,10 @@ test_labels = labels[s:]            #测试集的准备
 
 
 x = tf.placeholder(tf.float32, shape=[None, 16])
-y = tf.placeholder(tf.float32, shape=[None, 10])
+y = tf.placeholder(tf.float32, shape=[None, 2])
 
-W = tf.Variable(tf.zeros([16, 10]))
-b = tf.Variable(tf.zeros([10]))
+W = tf.Variable(tf.zeros([16, 2]))
+b = tf.Variable(tf.zeros([2]))
 
 actv = tf.nn.softmax(tf.matmul(x, W) + b)
 cost = tf.reduce_mean(-tf.reduce_sum(y*tf.log(actv), reduction_indices=1))

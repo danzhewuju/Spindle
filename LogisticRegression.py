@@ -113,7 +113,7 @@ def deal_info(path):   #文件的处理，样本的优化             相关的�
 
 
 def run():
-    data, labels = deal_info(path)  # 数据处理以及标签
+    data, labels = deal_info(path)  # 数据处理以及标签，不同模式的数据处理
     print(data.shape[0])
     num_example = data.shape[0]
     arr = np.arange(num_example)

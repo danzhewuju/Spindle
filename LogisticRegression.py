@@ -7,7 +7,7 @@ import pandas as pd
 import os
 import glob
 path = "./datasets/"
-feature = 13        #特征的数量
+feature = 65        #特征的数量
 
 
 def get_distribution_Data(path, key):
@@ -20,18 +20,19 @@ def get_distribution_Data(path, key):
 
 
 def static_spindle_distribution(path):
+    ratio = 0.2
     key = "Time_of_night"
     data = get_distribution_Data(path, key)
     result = []
     for tmp_d in data:
         max_n = max(tmp_d)
-        data_count = np.zeros(int(max_n) + 1)
+        data_count = np.zeros(feature)
         for d in tmp_d:
-            data_count[int(d)] += 1
+            data_count[int(d / ratio)] += 1
         result.append(data_count)
-    length = max(map(len, result))
+    length = feature
     print(length)
-    x_data = np.full((len(result), length), 0,np.int32 )
+    x_data = np.full((len(result), length), 0, np.int32 )
     for row in range(len(result)):
         length = len(result[row])                                        #统一的量化标准（全部转化为相同的维度）
         x_data[row][:length] = result[row]
@@ -148,8 +149,8 @@ def run():
     init = tf.global_variables_initializer()
 
     train_epochs = 100
-    batch_size = 10
-    display_step = 10
+    batch_size = 20
+    display_step = 20
 
     sess = tf.Session()
     sess.run(init)

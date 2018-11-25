@@ -27,7 +27,7 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
     model.summary()
 
     print("DIMs=%d"%(x_train[0].shape[0]))
-    history = model.fit(x_train, y_labels, epochs=10, batch_size=16, validation_split=0.2)
+    history = model.fit(x_train, y_labels, epochs=10, batch_size=32, validation_split=0.2)
     draw(history)
 
 

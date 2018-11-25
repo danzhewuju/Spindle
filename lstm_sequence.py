@@ -19,20 +19,21 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
 
     model = Sequential()
     # model.add(Embedding(max_feature, 32))
-    model.add(LSTM(32, input_shape=(length, 1)))
+    model.add(LSTM(64, input_shape=(length, 1)))
 
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['acc'])
     model.summary()
 
+    print("DIMs=%d"%(x_train[0].shape[0]))
     history = model.fit(x_train, y_labels, epochs=10, batch_size=16, validation_split=0.2)
     draw(history)
 
 
 def data_test():
     length = 0   #每一个系列的长度
-    spindle = SpindleData()
+    spindle = SpindleData(step=0.001)
     x_train = spindle.coding_q
     y_train = spindle.labels
     length = spindle.max_length

@@ -10,7 +10,7 @@ from LogisticRegression import get_Data
 from matplotlib import pyplot as plt
 
 
-def statistic_info(path,save_path,key):   #文件的处理，样本的优化
+def statistic_info(path, save_path,key):   #文件的处理，样本的优化
     data = get_Data(path, key)
     if path == "datasets/cases":
         plt.hist(data, bins=10, density=True, color="r")

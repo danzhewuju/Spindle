@@ -27,15 +27,20 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
     model.summary()
 
     print("DIMs=%d"%(x_train[0].shape[0]))
-    history = model.fit(x_train, y_labels, epochs=10, batch_size=32, validation_split=0.2)
+    history = model.fit(x_train, y_labels, epochs=10, batch_size=48, validation_split=0.2)
     draw(history)
 
 
 def data_test():
     length = 0   #每一个系列的长度
-    spindle = SpindleData(step=0.001)
+    spindle = SpindleData(step=0.0001)
     x_train = spindle.coding_q
     y_train = spindle.labels
+    #将数据打乱
+    arr = np.arange(y_train.__len__())
+    np.random.shuffle(arr)
+    x_train = x_train[arr]
+    y_train = y_train[arr]
     length = spindle.max_length
     return x_train, y_train, length
 

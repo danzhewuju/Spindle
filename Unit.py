@@ -31,7 +31,7 @@ class SpindleData:
             for p in path_tmps:
                 paths.append(p)
                 labels.append(i)
-        np.asarray(labels)                  #将标签转化为np的格式
+        labels = np.asarray(labels)                  #将标签转化为np的格式
         return paths, labels
 
     def coding(self):#所有的数据读取以及存储(这里保存了数据的原始数据占用内存可能比较大)

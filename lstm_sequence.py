@@ -33,7 +33,7 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
 
 def data_test():
     length = 0   #每一个系列的长度
-    spindle = SpindleData(step=0.0001)
+    spindle = SpindleData(step=0.001)
     x_train = spindle.coding_q
     y_train = spindle.labels
     #将数据打乱

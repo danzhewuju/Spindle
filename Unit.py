@@ -58,7 +58,7 @@ def bit_coding(data, step): #对一个数据进行编码
     while count < length:
         n = (data[count]-pre_data) / step
         if n > 0:
-            if n % 1 > 0:
+            if n > int(n):
                 n = int(n)
                 code += [0] * n + [1]
             else:
@@ -89,6 +89,25 @@ def draw(history):
     plt.title('Training and Validation loss')
     plt.legend()
     plt.show()
+
+
+def get_all_paths(path):
+    cate = [(os.path.join(path, x)) for x in os.listdir(path)]
+    paths = []
+    for i, p in enumerate(cate):
+        path_tmps = glob.glob(os.path.join(p, "*.csv"))
+        for p in path_tmps:
+            paths.append(p)
+    return paths
+
+
+def get_all_data(paths):
+    data = []
+    for p in paths:
+        d = pd.read_csv(p, seq=",", skiprows=(0, 1))
+        data.append(d)
+        print("Reading %d file" % (paths.index(p)+1))
+    return data
 
 
 def test(): #这里是测试方法

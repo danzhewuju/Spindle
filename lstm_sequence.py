@@ -19,7 +19,7 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
 
     model = Sequential()
     # model.add(Embedding(max_feature, 32))
-    model.add(LSTM(64, input_shape=(length, 1)))
+    model.add(LSTM(32, input_shape=(length, 1)))
 
     model.add(Dense(1, activation='sigmoid'))
 

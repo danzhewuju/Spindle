@@ -1,12 +1,4 @@
 #!/usr/bin/python
-import numpy as np
-import tensorflow as tf
-import matplotlib.pylab as plt
-from tensorflow.examples.tutorials.mnist import input_data
-import pandas as pd
-import os
-import glob
-from Unit import bit_coding
 import Levenshtein
 # from lstm_sequence import SpindleData
 # path = "datasets"
@@ -35,8 +27,12 @@ f = open("data/controls_encoding_str.txt", 'r', encoding="UTF-8")
 for line in f:
     data_controls.append(line.split(":")[-1])
 f.close()
-print(Levenshtein.jaro(data_controls[1], data_cases[2]))
-
-
-
+jaro_cases = []
+jaro_controls = []
+for d in data_cases:
+    for d_t in data_cases:
+        jaro_cases.append(Levenshtein.jaro(d, d_t))
+for d in data_controls:
+    for d_t in data_controls:
+        jaro_controls.append(Levenshtein.jaro(d, d_t))
 

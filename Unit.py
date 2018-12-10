@@ -186,8 +186,18 @@ def calculate_distance():
         data_controls.append(line.split(":")[-1])
     print("controls_encoding_str文件读取完成！")
     f.close()
+    jaro_cases = []
+    jaro_controls = []
     for d in data_cases:
-        print(Levenshtein.jaro(data_cases[1], d))
+        for d_t in data_cases:
+            jaro_cases.append(Levenshtein.jaro(d, d_t))
+            print("....")
+    for d in data_controls:
+        for d_t in data_controls:
+            jaro_controls.append(Levenshtein.jaro(d, d_t))
+            print("....")
+    print(jaro_controls)
+    print(jaro_cases)
 
 
 if __name__ == '__main__':

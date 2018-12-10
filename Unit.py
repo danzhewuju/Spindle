@@ -188,16 +188,57 @@ def calculate_distance():
     f.close()
     jaro_cases = []
     jaro_controls = []
-    for d in data_cases:
-        for d_t in data_cases:
-            jaro_cases.append(Levenshtein.jaro(d, d_t))
-            print("....")
-    for d in data_controls:
-        for d_t in data_controls:
-            jaro_controls.append(Levenshtein.jaro(d, d_t))
-            print("....")
-    print(jaro_controls)
-    print(jaro_cases)
+
+    count = 0
+
+    #  相互之间的比较
+    # for d in data_cases:
+    #     for d_t in data_cases:
+    #         jaro_cases.append(Levenshtein.jaro(d, d_t))
+    #         count += 1
+    #         print("正在处理第{}条数据".format(count))
+    # count = 0
+    # for d in data_controls:
+    #     for d_t in data_controls:
+    #         jaro_controls.append(Levenshtein.jaro(d, d_t))
+    #         count += 1
+    #         print("正在处理第{}条数据".format(count))
+    # ----------------------原始对齐数据------------------------
+
+
+    #--------------------------------------------选择基本的数据---------------------------------------------
+    ratio_cases = np.random.randint(0, data_cases.__len__(), int(0.2*data_cases.__len__()))#选取20%进行测试
+    ratio_control = np.random.randint(0, data_controls.__len__(), int(0.2*data_controls.__len__()))
+    print("ratio_cases(count):{}, ratio_controls(count){}".format(ratio_cases.__len__(), ratio_control.__len__()))
+    m = ratio_cases.__len__() ; n = ratio_control.__len__()
+
+    Detection_queue = [data_cases[x] for x in ratio_cases]+[data_controls[x] for x in ratio_control]
+    result_cases_distant = []
+    result_controls_distant = []
+    count = 0
+    for d in Detection_queue:   #记录病人的信息
+        sum = 0
+        count += 1
+        for sample in data_cases:
+            sum += Levenshtein.jaro(d, sample)
+        result_cases_distant.append(sum/data_cases.__len__())
+        print("正在处理第{}条数据...".format(count))
+    count = 0
+    for d in Detection_queue:
+        sum = 0
+        count += 1
+        for sample in data_controls:
+            sum += Levenshtein.jaro(d, sample)
+        result_controls_distant.append(sum / data_controls.__len__())
+        print("正在处理第{}条数据...".format(count))
+    result_cases_distant = np.asarray(result_cases_distant)
+    result_controls_distant = np.asarray(result_controls_distant)
+
+    for index in range(result_controls_distant.__len__()):
+        if index < m:
+            print("cases:", result_cases_distant[index], result_controls_distant[index])
+        else:
+            print("control:", result_cases_distant[index], result_controls_distant[index])
 
 
 if __name__ == '__main__':

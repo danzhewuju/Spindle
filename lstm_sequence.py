@@ -32,21 +32,21 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
     draw(history)
 
 
-def learning_gru():                   #lstm暂时还是比较适合于文本中，对于有序序暂不合适
+def learning_gru():                   #gru是其lstm的简化版简化版
     x_train, y_labels, length = data_test()
     x_train = np.expand_dims(x_train, axis=2)
 
     model = Sequential()
     # model.add(Embedding(max_feature, 32))
-    model.add(layers.GRU(32,input_shape=(length, 1)))
+    model.add(layers.GRU(32, input_shape=(length, 1)))
 
-    model.add(Dense(1,activation='sigmoid'))
+    model.add(Dense(1, activation='sigmoid'))
 
     model.compile(optimizer='rmsprop', loss='mae', metrics=['acc'])
     model.summary()
 
     print("DIMs=%d"%(x_train[0].shape[0]))
-    history = model.fit(x_train, y_labels, epochs=100, batch_size=32, validation_split=0.3)
+    history = model.fit(x_train, y_labels, epochs=100, batch_size=32, validation_split=0.4)
     draw(history)
 
 
@@ -60,7 +60,7 @@ def data_test():
     np.random.shuffle(arr)
     x_train = x_train[arr]
     y_train = y_train[arr]
-    length = spindle.max_length
+    length = int(spindle.mean_length)
     return x_train, y_train, length
 
 

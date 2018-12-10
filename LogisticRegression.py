@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#----------逻辑回归模型-----------
 import numpy as np
 import tensorflow as tf
 import matplotlib.pylab as plt
@@ -7,7 +8,7 @@ import pandas as pd
 import os
 import glob
 path = "./datasets/"
-feature = 65        #特征的数量
+feature = 90        #特征的数量
 
 
 def get_distribution_Data(path, key):
@@ -20,7 +21,7 @@ def get_distribution_Data(path, key):
 
 
 def static_spindle_distribution(path):
-    ratio = 0.2
+    ratio = 0.2                                    #通过步长来控制，进行统计信息
     key = "Time_of_night"
     data = get_distribution_Data(path, key)
     result = []

@@ -1,4 +1,5 @@
 from keras.layers import LSTM
+from keras import layers
 from keras.models import Sequential
 from Unit import SpindleData
 from keras.layers import Flatten, Dense, Embedding
@@ -7,7 +8,7 @@ import os
 from Unit import draw
 from keras.backend.tensorflow_backend import set_session
 import tensorflow as tf
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 set_session(tf.Session(config=config))      #将GPU设置为按需分配
@@ -19,7 +20,7 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
 
     model = Sequential()
     # model.add(Embedding(max_feature, 32))
-    model.add(LSTM(32, input_shape=(length, 1)))
+    model.add(LSTM(48, input_shape=(length, 1)))
 
     model.add(Dense(1, activation='sigmoid'))
 
@@ -27,7 +28,25 @@ def learning_lstm():                   #lstm暂时还是比较适合于文本中
     model.summary()
 
     print("DIMs=%d"%(x_train[0].shape[0]))
-    history = model.fit(x_train, y_labels, epochs=10, batch_size=48, validation_split=0.2)
+    history = model.fit(x_train, y_labels, epochs=100, batch_size=48, validation_split=0.2)
+    draw(history)
+
+
+def learning_gru():                   #lstm暂时还是比较适合于文本中，对于有序序暂不合适
+    x_train, y_labels, length = data_test()
+    x_train = np.expand_dims(x_train, axis=2)
+
+    model = Sequential()
+    # model.add(Embedding(max_feature, 32))
+    model.add(layers.GRU(32,input_shape=(length, 1)))
+
+    model.add(Dense(1,activation='sigmoid'))
+
+    model.compile(optimizer='rmsprop', loss='mae', metrics=['acc'])
+    model.summary()
+
+    print("DIMs=%d"%(x_train[0].shape[0]))
+    history = model.fit(x_train, y_labels, epochs=100, batch_size=32, validation_split=0.3)
     draw(history)
 
 
@@ -45,4 +64,4 @@ def data_test():
     return x_train, y_train, length
 
 
-learning_lstm()
+learning_gru()

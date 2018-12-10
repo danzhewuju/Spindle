@@ -13,6 +13,7 @@ class SpindleData:
     data = []
     step = 0.0001
     max_length = 0#设置默认的编码间隔
+    coding_w = []  #元素的数据编码
     coding_q = []
 
     def __init__(self, path="datasets", step=0.0001 ):
@@ -46,8 +47,28 @@ class SpindleData:
             print("正在对第%d个序列进行编码..."%(i+1))
             codeing_q.append(code)#将二位的编码加入到序列中
         self.max_length = max([len(x) for x in codeing_q])
+        self.coding_w = codeing_q
         codeing_q = preprocessing.sequence.pad_sequences(codeing_q, maxlen=self.max_length)   #将所有的串都弄成相同的维度
         self.coding_q = np.asarray(codeing_q)
+
+    def writer_coding(self):
+        f = open("./data/cases_encoding.txt", 'w', encoding="UTF-8")
+        fp = open("./data/controls_encoding.txt", 'w', encoding="UTF-8")
+        cate =[x for x in os.listdir("datasets/cases")]
+        n = cate.__len__()
+        for index, p in enumerate(self.coding_w):
+            name = self.paths[index].split('\\')[-1]
+            if index < n:
+                f.write(name+" ")
+                f.writelines(str(p))
+                f.write("\n")
+            else:
+                fp.write(name + " ")
+                fp.writelines(str(p))
+                fp.write("\n")
+        f.close()
+        fp.close()
+        print("Writing Success!!!")
 
 
 def bit_coding(data, step): #对一个数据进行编码
@@ -112,7 +133,8 @@ def get_all_data(paths):
 
 def test(): #这里是测试方法
     path = "datasets"
-    spindle = SpindleData()
+    spindle = SpindleData(step=0.001)
+    spindle.writer_coding()   #获得二进制编码
 
     return True
 

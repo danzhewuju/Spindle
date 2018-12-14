@@ -86,10 +86,11 @@ def calculate_distance():
     f.write(result)
     f.close()
 
+
 def test(): #这里是测试方法
     m = 1
     n = 5
-    r = 0.01
+    r = 0.001
     starttime = time.time()
     for i in range(m):
         print("this is %d testing"%(i+1))

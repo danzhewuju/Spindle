@@ -6,9 +6,10 @@ import numpy as np
 import keras.preprocessing as preprocessing
 import Levenshtein
 import time
+import threading
 
-
-filter_length = 50  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
+ratio = 0.5
+filter_length = 5  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
 
 
 class SpindleData:
@@ -195,9 +196,9 @@ def get_all_data(paths):
 
 
 def test(): #这里是测试方法
-    m = 10
-    n = 3
-    r = 0.001
+    m = 1
+    n = 5
+    r = 0.01
     starttime = time.time()
     for i in range(m):
         print("this is %d testing"%(i+1))
@@ -210,7 +211,7 @@ def test(): #这里是测试方法
             print("this is %d running"%(j))
             calculate_distance()
     endtime = time.time()
-    print(endtime-starttime)
+    print("Running Time:%.2fs" % (endtime-starttime))
     return True
 
 
@@ -248,8 +249,8 @@ def calculate_distance():
 
 
     #--------------------------------------------选择基本的数据---------------------------------------------
-    ratio_cases = np.random.randint(0, data_cases.__len__(), int(0.2*data_cases.__len__()))#选取20%进行测试
-    ratio_control = np.random.randint(0, data_controls.__len__(), int(0.2*data_controls.__len__()))
+    ratio_cases = np.random.randint(0, data_cases.__len__(), int(ratio*data_cases.__len__()))#选取20%进行测试
+    ratio_control = np.random.randint(0, data_controls.__len__(), int(ratio*data_controls.__len__()))
     print("ratio_cases(count):{}, ratio_controls(count){}".format(ratio_cases.__len__(), ratio_control.__len__()))
     m = ratio_cases.__len__() ; n = ratio_control.__len__();
 
@@ -296,6 +297,6 @@ def calculate_distance():
     f.close()
 
 
-if __name__ == '__main__':
-    test()
+# if __name__ == '__main__':
+    # test()
 

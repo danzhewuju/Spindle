@@ -1,71 +1,27 @@
-#!/usr/bin/python
-import Levenshtein
-import numpy as np
-# from lstm_sequence import SpindleData
-# path = "datasets"
-# spindle = SpindleData()
-# datas = spindle.data
-# # print(spindle.data.__len__())
-# data_mean = []
-# for d in datas:
-#     # d = d['Time_of_night']
-#     data_mean.append((d[len(d)-1]-d[0])/len(d))
-#
-# print(data_mean)
-# print(np.mean(data_mean)*3600)
+import threading
+import time
 
-# print(data)
-# code =bit_coding(data, step=0.0001)
-# # code = np.asarray(code)
-# print(code)
-# f = open("data/cases_encoding_str.txt", 'r', encoding="UTF-8")
-# data_cases = []
-# for line in f:
-#     data_cases.append(line.split(":")[-1])
-# f.close()
-# data_controls = []
-# f = open("data/controls_encoding_str.txt", 'r', encoding="UTF-8")
-# for line in f:
-#     data_controls.append(line.split(":")[-1])
-# f.close()
-# jaro_cases = []
-# jaro_controls = []
-# for d in data_cases:
-#     for d_t in data_cases:
-#         jaro_cases.append(Levenshtein.jaro(d, d_t))
-# for d in data_controls:
-#     for d_t in data_controls:
-#         jaro_controls.append(Levenshtein.jaro(d, d_t))
+exitFlag = 0
 
 
-class A:
-    a = []
-    b = 0
+class myThread(threading.Thread):  # 继承父类threading.Thread
+    def __init__(self, threadID, name, a):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.a = a
 
-    def __init__(self):
-        # self.a.clear()
-        b = np.random.randint(0, 10)
-        self.a.append(b)
-
-    def set_b(self, b):
-        self.b = b
-
-    def __del__(self):
-        print("del")
-
-        # self.a.clear()
+    def run(self):  # 把要执行的代码写到run函数里面 线程在创建后会直接运行run函数
+        self.a.append(12)
 
 
-test1 = A()
-test1.set_b(11)
-print(test1.a)
-print(test1.b)
-test1 = A()
-print(test1.b)
-print(test1.a)
+# 创建新线程
+a = []
+thread1 = myThread(1, "Thread-1", a)
+thread2 = myThread(2, "Thread-2", a)
 
-# for i in range(10):
-#     a =A()
-#     print(a.a)
+# 开启线程
+thread1.start()
+thread2.start()
 
-
+print(a)

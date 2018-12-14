@@ -5,6 +5,10 @@ import pandas as pd
 import numpy as np
 import keras.preprocessing as preprocessing
 import Levenshtein
+import time
+
+
+filter_length = 50  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
 
 
 class SpindleData:
@@ -12,6 +16,8 @@ class SpindleData:
     paths = []
     labels = []
     data = []
+    cases_n = 0
+    controls_n = 0
     length = 0 #固定长度的设置
     step = 0.0001#设置默认的编码间隔
     max_length = 0 #序列的最大长度
@@ -22,8 +28,16 @@ class SpindleData:
     def __init__(self, path="datasets", step=0.0001 ):
         self.path = path
         self.step =step
+        self.clear_info()  #将之前旧的数据处理掉
         self.paths, self.labels = self.get_data_labels()   #获得路径以及标签
-        self.coding()                      #
+        self.coding()
+
+    def clear_info(self):
+        self.paths.clear()
+        self.labels.clear()
+        self.data.clear()
+        self.coding_w.clear()
+        self.coding_q.clear()
 
     def get_data_labels(self):  # 返回获取的数据以及标签[0,1,0,1,...]  "./datasets/"
         path = self.path
@@ -35,35 +49,53 @@ class SpindleData:
             for p in path_tmps:
                 paths.append(p)
                 labels.append(i)
+                if i == 0:
+                    self.cases_n += 1
+                else:
+                    self.controls_n += 1
         labels = np.asarray(labels)                  #将标签转化为np的格式
-        return paths, labels
+        return paths, labels   #获取的是全部的文件路径
 
     def coding(self):#所有的数据读取以及存储(这里保存了数据的原始数据占用内存可能比较大)
-        codeing_q = []
-        for p in self.paths:
+        coding_q = []
+        del_list = []
+        sub_cases = 0   #统计病人删选的个数
+        sun_control = 0  #统计正常人删选的个数
+        for i, p in enumerate(self.paths):
             data = pd.read_csv(p, skiprows=(0, 1), sep=",")
+            if data.__len__() < filter_length:                    #过滤掉不满足的部分
+                del_list.append(i)  #记录将要删除的标签位置
+                print("过滤掉了第%d个文件!" % (i+1))
+                if self.labels[i] == 0:
+                    sub_cases += 1
+                else:
+                    sun_control += 1
+                continue
             print("正在读取第%d个csv文件..." % (self.paths.index(p)+1))
             data =data['Time_of_night']
             self.data.append(data)
+
+        self.cases_n -= sub_cases        #减去被删选的数
+        self.controls_n -= sun_control   #增加被删选的数
+        print("cases_number:%d, controls_number:%d" % (self.cases_n, self.controls_n))
+        self.labels = [x for x in self.labels if x not in del_list]  #去除掉对应的标签
         for i, d in enumerate(self.data):
             code = bit_coding(d, step=self.step)
-            print("正在对第%d个序列进行编码..."%(i+1))
-            codeing_q.append(code)#将二位的编码加入到序列中
-        self.max_length = max([len(x) for x in codeing_q])
-        self.mean_length = np.mean(np.asarray([len(x) for x in codeing_q]))
-        self.coding_w = codeing_q
+            print("正在对第%d个序列进行编码..." %(i+1))
+            coding_q.append(code)#将二位的编码加入到序列中
+        self.max_length = max([len(x) for x in coding_q])
+        self.mean_length = np.mean(np.asarray([len(x) for x in coding_q]))
+        self.coding_w = coding_q
         # codeing_q = preprocessing.sequence.pad_sequences(codeing_q, maxlen=self.max_length)   #将所有的串都弄成相同的维度
-        codeing_q = preprocessing.sequence.pad_sequences(codeing_q, maxlen=int(self.mean_length))  # 将所有的串都弄成相同的维度
-        self.coding_q = np.asarray(codeing_q)
+        code_q = preprocessing.sequence.pad_sequences(coding_q, maxlen=int(self.mean_length))  # 将所有的串都弄成相同的维度
+        self.coding_q = np.asarray(code_q)
 
     def writer_coding(self):                                         #将数据的原始编码写入到文件中（没有对齐的数据）
         f = open("./data/cases_encoding.txt", 'w', encoding="UTF-8")
         fp = open("./data/controls_encoding.txt", 'w', encoding="UTF-8")
-        cate =[x for x in os.listdir("datasets/cases")]
-        n = cate.__len__()
         for index, p in enumerate(self.coding_w):
             name = self.paths[index].split('\\')[-1]
-            if index < n:
+            if index < self.cases_n:
                 f.write(name+" ")
                 f.writelines(str(p))
                 f.write("\n")
@@ -82,14 +114,12 @@ class SpindleData:
             str_a += str(a)
         return str_a
 
-    def writing_coding_str(self):  #将对齐编码转化为字符串的形式
+    def writing_coding_str(self):  #将对齐编码转化为字符串的形式，并写入到文件中
         f = open("./data/cases_encoding_str.txt", 'w', encoding="UTF-8")
         fp = open("./data/controls_encoding_str.txt", 'w', encoding="UTF-8")
-        cate = [x for x in os.listdir("datasets/cases")]
-        n = cate.__len__()
         for index, p in enumerate(self.coding_q):
             name = self.paths[index].split('\\')[-1]
-            if index < n:
+            if index < self.cases_n:
                 f.write(name + ":")
                 str_a = SpindleData.trans_list_str(p)
                 f.writelines(str_a)
@@ -165,11 +195,22 @@ def get_all_data(paths):
 
 
 def test(): #这里是测试方法
-    # path = "datasets"
-    # spindle = SpindleData(step=0.001)
-    # print("mean:%f" % spindle.mean_length)
-    # spindle.writing_coding_str()
-    calculate_distance()
+    m = 10
+    n = 3
+    r = 0.001
+    starttime = time.time()
+    for i in range(m):
+        print("this is %d testing"%(i+1))
+        t = r * (i+1)
+        path = "datasets"
+        spindle = SpindleData(step=t, path=path)
+        print("mean:%f" % spindle.mean_length)
+        spindle.writing_coding_str()
+        for j in range(n):
+            print("this is %d running"%(j))
+            calculate_distance()
+    endtime = time.time()
+    print(endtime-starttime)
     return True
 
 
@@ -210,7 +251,7 @@ def calculate_distance():
     ratio_cases = np.random.randint(0, data_cases.__len__(), int(0.2*data_cases.__len__()))#选取20%进行测试
     ratio_control = np.random.randint(0, data_controls.__len__(), int(0.2*data_controls.__len__()))
     print("ratio_cases(count):{}, ratio_controls(count){}".format(ratio_cases.__len__(), ratio_control.__len__()))
-    m = ratio_cases.__len__() ; n = ratio_control.__len__()
+    m = ratio_cases.__len__() ; n = ratio_control.__len__();
 
     Detection_queue = [data_cases[x] for x in ratio_cases]+[data_controls[x] for x in ratio_control]
     result_cases_distant = []
@@ -231,14 +272,28 @@ def calculate_distance():
             sum += Levenshtein.jaro(d, sample)
         result_controls_distant.append(sum / data_controls.__len__())
         print("正在处理第{}条数据...".format(count))
+
     result_cases_distant = np.asarray(result_cases_distant)
     result_controls_distant = np.asarray(result_controls_distant)
+    dim = len(data_controls[0])
+    count_case = 0
+    count_control = 0
 
     for index in range(result_controls_distant.__len__()):
         if index < m:
+            if result_cases_distant[index] > result_controls_distant[index]:
+                count_case += 1
             print("cases:", result_cases_distant[index], result_controls_distant[index])
         else:
             print("control:", result_cases_distant[index], result_controls_distant[index])
+            if result_controls_distant[index] > result_cases_distant[index]:
+                count_control += 1
+    result = "dim:%d\ncases:%.4f\ncontrols:%.4f\ntotal:%.4f\n" % (dim, count_case/m, count_control/n, (count_case+count_control)/(m+n))
+    print(result)
+    f = open("data/result.txt", 'a', encoding="UTF-8")
+    f.write("-----------------------------------------------------------\n")
+    f.write(result)
+    f.close()
 
 
 if __name__ == '__main__':

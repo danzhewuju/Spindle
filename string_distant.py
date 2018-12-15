@@ -90,7 +90,7 @@ def calculate_distance():
 def test(): #这里是测试方法
     m = 1
     n = 5
-    r = 0.001
+    r = 0.01
     starttime = time.time()
     for i in range(m):
         print("this is %d testing"%(i+1))

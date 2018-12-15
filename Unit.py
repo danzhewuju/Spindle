@@ -9,7 +9,7 @@ import time
 import threading
 
 
-filter_length = 5  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
+filter_length = 10  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
 
 
 class SpindleData:

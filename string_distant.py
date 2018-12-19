@@ -69,7 +69,6 @@ def calculate_distance():
     dim = len(data_controls[0])
     count_case = 0
     count_control = 0
-
     for index in range(result_controls_distant.__len__()):
         if index < m:
             if result_cases_distant[index] > result_controls_distant[index]:
@@ -79,25 +78,25 @@ def calculate_distance():
             print("control:", result_cases_distant[index], result_controls_distant[index])
             if result_controls_distant[index] > result_cases_distant[index]:
                 count_control += 1
-    result = "dim:%d\ncases:%.4f\ncontrols:%.4f\ntotal:%.4f\n" % (dim, count_case/m, count_control/n, (count_case+count_control)/(m+n))
+    f = open("data/result.csv", 'a', encoding="UTF-8")
+    result = "%d,%.4f,%.4f,%.4f\n" % (dim, count_case/m, count_control/n, (count_case+count_control)/(m+n))
     print(result)
-    f = open("data/result.txt", 'a', encoding="UTF-8")
-    f.write("-----------------------------------------------------------\n")
     f.write(result)
     f.close()
 
 
 def test(): #这里是测试方法
-    m = 1
-    n = 5
-    r = 0.01
+    m = 100
+    n = 10
+    r = 0.001
     starttime = time.time()
     for i in range(m):
         print("this is %d testing"%(i+1))
         t = r * (i+1)
         path = "datasets"
         spindle = SpindleData(step=t, path=path)
-        print("mean:%f" % spindle.mean_length)
+        # print("length:%f" % spindle.mean_length)
+        print("length:%f" % spindle.max_length)
         spindle.writing_coding_str()
         for j in range(n):
             print("this is %d running"%(j))

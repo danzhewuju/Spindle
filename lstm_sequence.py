@@ -8,10 +8,10 @@ import os
 from Unit import draw
 from keras.backend.tensorflow_backend import set_session
 import tensorflow as tf
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-set_session(tf.Session(config=config))      #将GPU设置为按需分配
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# config = tf.ConfigProto()
+# config.gpu_options.allow_growth = True
+# set_session(tf.Session(config=config))      #将GPU设置为按需分配
 
 
 def learning_lstm():                   #lstm暂时还是比较适合于文本中，对于有序序暂不合适

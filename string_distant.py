@@ -143,7 +143,9 @@ def top_sample(ratio=0.2):                  #获取整个样本最好的几个�
 
 
 def get_top_data():#获取由top_sample计算的结果来获取其数据
-
+    data_cases = []
+    data_controls = []
+    return data_cases, data_controls
 
 
 def calculate_step():  #通过字符串的长度来计算出对应的步长
@@ -162,5 +164,5 @@ def calculate_step():  #通过字符串的长度来计算出对应的步长
 
 if __name__ == '__main__':
     # calculate_step()
-    # test()
-    top_sample()
+    test()
+    # top_sample()

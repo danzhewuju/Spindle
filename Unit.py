@@ -9,7 +9,7 @@ import time
 import threading
 
 
-filter_length = 10  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
+filter_length = 20  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
 
 
 class SpindleData:
@@ -20,7 +20,7 @@ class SpindleData:
     cases_n = 0
     controls_n = 0
     length = 0 #固定长度的设置
-    step = 0.0001#设置默认的编码间隔
+    step = 0.002#设置默认的编码间隔
     max_length = 0 #序列的最大长度
     mean_length = 0 #序列的平均长度
     coding_w = []  #元素的数据编码
@@ -119,7 +119,8 @@ class SpindleData:
         f = open("./data/cases_encoding_str.txt", 'w', encoding="UTF-8")
         fp = open("./data/controls_encoding_str.txt", 'w', encoding="UTF-8")
         for index, p in enumerate(self.coding_q):
-            name = self.paths[index].split('\\')[-1]
+            name = self.paths[index].split('\\')[-1]  #Windows系统下的路径
+            # name = self.paths[index].split('/')[-1]  #Mac 下的文件路径
             if index < self.cases_n:
                 f.write(name + ":")
                 str_a = SpindleData.trans_list_str(p)
@@ -195,9 +196,12 @@ def get_all_data(paths):
     return data
 
 
-def test(): #这里是测试方法
+def test(): #这里是测试方
+    spindle = SpindleData(step=0.002)
+    spindle.writing_coding_str()
     return True
 
-# if __name__ == '__main__':
-    # test()
+
+if __name__ == '__main__':
+    test()
 

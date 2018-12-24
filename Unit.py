@@ -87,8 +87,8 @@ class SpindleData:
         self.max_length = max([len(x) for x in coding_q])
         self.mean_length = np.mean(np.asarray([len(x) for x in coding_q]))
         self.coding_w = coding_q
-        # codeing_q = preprocessing.sequence.pad_sequences(codeing_q, maxlen=self.max_length)   #将所有的串都弄成相同的维度
-        code_q = preprocessing.sequence.pad_sequences(coding_q, maxlen=int(self.mean_length))  # 将所有的串都弄成相同的维度
+        code_q = preprocessing.sequence.pad_sequences(coding_q, maxlen=self.max_length)   #将所有的串都弄成相同的维度(最大长度)
+        # code_q = preprocessing.sequence.pad_sequences(coding_q, maxlen=int(self.mean_length))  # 将所有的串都弄成相同的维度(平均长度)
         self.coding_q = np.asarray(code_q)
 
     def writer_coding(self):                                         #将数据的原始编码写入到文件中（没有对齐的数据）

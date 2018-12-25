@@ -9,21 +9,6 @@ ratio = 0.5   #用于测试的比例
 
 def calculate_distance():  #计算距离的评价标准是和样本字符串进行比较(非压缩啊的版本)
     # -------------------------------------------基于全部数据的存储比较-------------------------------------------
-    # f = open("data/cases_encoding_str.txt", 'r', encoding="UTF-8")
-    # data_cases = []
-    # for line in f:
-    #     data_cases.append(line.split(":")[-1])
-    # print("cases_encoding_str文件读取完成！")
-    # f.close()
-    # data_controls = []
-    # f = open("data/controls_encoding_str.txt", 'r', encoding="UTF-8")
-    # for line in f:
-    #     data_controls.append(line.split(":")[-1])
-    # print("controls_encoding_str文件读取完成！")
-    # f.close()
-
-    # -------------------------------------------优化top选择比较------------------------------------------
-    data_cases_top, data_controls_top = get_top_data()
     f = open("data/cases_encoding_str.txt", 'r', encoding="UTF-8")
     data_cases = []
     for line in f:
@@ -36,6 +21,23 @@ def calculate_distance():  #计算距离的评价标准是和样本字符串进�
         data_controls.append(line.split(":")[-1])
     print("controls_encoding_str文件读取完成！")
     f.close()
+    data_cases_top = data_cases
+    data_controls_top = data_controls #只是为了保持形式的一致性
+
+    # -------------------------------------------优化top选择比较------------------------------------------
+    # data_cases_top, data_controls_top = get_top_data()
+    # f = open("data/cases_encoding_str.txt", 'r', encoding="UTF-8")
+    # data_cases = []
+    # for line in f:
+    #     data_cases.append(line.split(":")[-1])
+    # print("cases_encoding_str文件读取完成！")
+    # f.close()
+    # data_controls = []
+    # f = open("data/controls_encoding_str.txt", 'r', encoding="UTF-8")
+    # for line in f:
+    #     data_controls.append(line.split(":")[-1])
+    # print("controls_encoding_str文件读取完成！")
+    # f.close()
 
     #--------------------------------------------选择基本的数据---------------------------------------------
     ratio_cases = np.random.randint(0, data_cases.__len__(), int(ratio*data_cases.__len__()))#选取20%进行测试
@@ -85,20 +87,6 @@ def calculate_distance():  #计算距离的评价标准是和样本字符串进�
 
 
 def calculate_distance_compression():  #计算距离的评价标准是和样本字符串进行比较(非压缩啊的版本)
-    # -------------------------------------------基于全部数据的存储比较-------------------------------------------
-    # f = open("data/cases_encoding_str.txt", 'r', encoding="UTF-8")
-    # data_cases = []
-    # for line in f:
-    #     data_cases.append(line.split(":")[-1])
-    # print("cases_encoding_str文件读取完成！")
-    # f.close()
-    # data_controls = []
-    # f = open("data/controls_encoding_str.txt", 'r', encoding="UTF-8")
-    # for line in f:
-    #     data_controls.append(line.split(":")[-1])
-    # print("controls_encoding_str文件读取完成！")
-    # f.close()
-
     # -------------------------------------------优化top选择比较------------------------------------------
     data_cases_top_tmp, data_controls_top_tmp = get_top_data()
     data_cases_top = [str_compression(x) for x in data_cases_top_tmp]
@@ -309,7 +297,7 @@ def str_compression(data, k=10):
 
 
 def run_top_acc():  #按照特定的规则生成代表性的字符串
-    top_sample()    #这个自需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
+    # top_sample()    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
     test()
 
 

@@ -4,6 +4,7 @@ import glob
 import pandas as pd
 import numpy as np
 import keras.preprocessing as preprocessing
+import math
 import Levenshtein
 import time
 import threading
@@ -27,13 +28,14 @@ class SpindleData:
     coding_w = []  #元素的数据编码,字符串的形式eg.10010010001...
     coding_q = []  #将序列弄成相同的维度，二值向量的序列[0,1,1,0,...]
     coding_number_distribution = []                #在特定步长中纺锤波的个数分布(长度可能不一致)
+    coding_number_distribution_isometic = []       #纺锤波个数分布的对齐操作
 
     def __init__(self, path="datasets", step=0.002 ):
         self.path = path
         self.step =step
         self.clear_info()  #将之前旧的数据处理掉
         self.paths, self.labels = self.get_data_labels()   #获得路径以及标签
-        self.coding()
+        self.coding_setting()
 
     def clear_info(self):
         self.paths.clear()
@@ -42,13 +44,21 @@ class SpindleData:
         self.coding_w.clear()
         self.coding_q.clear()
 
-    def get_spindle_number_distribution(self):
+    def get_spindle_number_distribution(self, ismax_length=True):
         code_list = []
         for index, d in enumerate(self.data):
             code = num_coding(d, self.step)
             code_list.append(np.asarray(code))
             print("正在统计第%d数据:%s的相关信息" % (index, self.names[index]))
         self.coding_number_distribution = code_list
+        if ismax_length:
+            code_length = max([len(x) for x in code_list])
+            print("max_length:%d" % code_length)
+        else:
+            code_length = int(np.mean(np.asarray([len(x) for x in code_list])))  #长度设置为均值
+            print("mean_length:%d" % code_length)
+        code_final = preprocessing.sequence.pad_sequences(code_list, maxlen=code_length)
+        self.coding_number_distribution_isometic = code_final    #个数分布的对齐操作
         return self.coding_number_distribution
 
     def get_data_labels(self):  # 返回获取的数据以及标签[0,1,0,1,...]  "./datasets/"
@@ -68,8 +78,7 @@ class SpindleData:
         labels = np.asarray(labels)                  #将标签转化为np的格式
         return paths, labels   #获取的是全部的文件路径
 
-    def coding(self):#所有的数据读取以及存储(这里保存了数据的原始数据占用内存可能比较大)
-        coding_q = []
+    def coding_setting(self):#所有的数据读取以及存储(这里保存了数据的原始数据占用内存可能比较大)
         del_list = []
         sub_cases = 0   #统计病人删选的个数
         sun_control = 0  #统计正常人删选的个数
@@ -92,6 +101,9 @@ class SpindleData:
         print("cases_number:%d, controls_number:%d" % (self.cases_n, self.controls_n))
         self.labels = [x for i, x in enumerate(self.labels) if i not in del_list]  #去除掉对应的标签
         self.names = [x.split("\\")[-1] for i, x in enumerate(self.paths) if i not in del_list]   #windows 下的文件名称提取
+
+    def set_bit_coding(self):     #二进制的编码
+        coding_q = []
         for i, d in enumerate(self.data):
             code = bit_coding(d, step=self.step)
             print("正在对第%d个序列进行编码..." %(i+1))
@@ -188,6 +200,23 @@ def num_coding(data, step):
     return code
 
 
+#两个长序列(相同维度)的乘法
+def multiply(data1, data2):
+    length = len(data1)
+    sum = 0
+    for index in range(length):
+        sum += data1[index] * data2[index]
+    return sum
+
+
+#余弦相似度的计算
+def cos(data1, data2):
+    d1 = multiply(data1, data2)
+    d2 = math.sqrt(multiply(data1, data1))*math.sqrt(multiply(data2,data2))
+    result = d1/d2
+    return result
+
+
 def draw(history):
     # 图形作图
     acc = history.history['acc']
@@ -229,20 +258,19 @@ def draw(history):
 #     return data
 
 
-def test(): #这里是测试方
+# def test(): #这里是测试方
     # spindle = SpindleData(step=0.002)
     # spindle.writing_coding_str()
-    spindle = SpindleData(step=0.25)
-    code = spindle.get_spindle_number_distribution()
-    code_max_length = max([len(x) for x in code])
-    code_final = preprocessing.sequence.pad_sequences(code, maxlen=code_max_length)
-    print(code)
-    print(code_final)
-    return True
+    # spindle = SpindleData(step=0.25)
+    # code = spindle.get_spindle_number_distribution()
+    # code_max_length = max([len(x) for x in code])
+    # code_final = preprocessing.sequence.pad_sequences(code, maxlen=code_max_length)
+    # print(code)
+    # print(code_final)
+    # result = cos(code_final[0], code_final[1])
+    # print(result)
+    # return True
 
-
-if __name__ == '__main__':
-    test()
 
 
 

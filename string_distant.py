@@ -150,6 +150,7 @@ def calculate_distance_compression():  #计算距离的评价标准是和样本�
     print(result)
     f.write(result)
     f.close()
+    return True
 
 
 def test(flag="total"): #这里是测试方法
@@ -162,6 +163,7 @@ def test(flag="total"): #这里是测试方法
         t = r * (i+1)
         path = "datasets"
         spindle = SpindleData(step=t, path=path)
+        spindle.set_bit_coding()
         # print("length:%f" % spindle.mean_length)   #显示的是用平均值长度还是使用最大长度
         print("length:%f" % spindle.max_length)
         spindle.writing_coding_str()
@@ -234,6 +236,7 @@ def top_sample(ratio=0.2):
         print(result_tmp)
         f.write(result_tmp)
     f.close()
+    return True
 
 
 #获取由top_sample计算的结果来获取其数据
@@ -265,22 +268,8 @@ def get_top_data():
     return data_cases, data_controls
 
 
-def calculate_step():  #通过字符串的长度来计算出对应的步长
-    step = 0.0001
-    n = 100
-    f = open("data/tran_length_step.csv", 'a', encoding="UTF-8")
-    for i in range(1, n+1):
-        step_tem = step*i
-        spindle = SpindleData(step=i)
-        result = str(spindle.max_length)+","+str(step_tem) + "," + str(3600*step_tem)+"\n"
-        f.write(result)  #最大长度的时间间隔映射表
-        print("Writing Success!")
-    f.close()
-    return True
-
-
 #主要是为了解决数据的稀疏性问题，指定一个K值，在这个K的基础上进行数据零的压缩，压缩可能会导致长度的不一致
-def str_compression(data, k=10):
+def str_compression(data, k=5):
     result = ""
     count = 0
     for d in data:

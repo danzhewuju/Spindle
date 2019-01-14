@@ -2,7 +2,11 @@ import threading
 import time
 import Levenshtein
 import pandas as pd
-a = [11,12,13,14 ,25,26,27,28]
-b = [1, 4,2]
-c = [x for i, x in enumerate(a) if i not in b]
-print(c)
+path = "data/top_cases.csv"
+data = pd.read_csv(path, sep=",")
+data_tmp = data["name"]
+d1 = data_tmp.tolist()
+print(d1)
+test_str = "mros-visit1-aa5688.csv"
+if test_str in data_tmp:
+    print("TRUE")

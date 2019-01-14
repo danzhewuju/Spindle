@@ -4,38 +4,34 @@ import glob
 import pandas as pd
 import numpy as np
 import keras.preprocessing as preprocessing
-import math
 import Levenshtein
 import time
 import threading
 
 
-filter_length = 20  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
+filter_length = 10  #设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
 
 
 class SpindleData:
     path = ""
     paths = []
     labels = []
-    names = []      #对应的文件名称列表
-    data = []       #Time_of_night序列中的所有数据
+    data = []
     cases_n = 0
     controls_n = 0
     length = 0 #固定长度的设置
-    step = 0.002#设置默认的编码间隔
+    step = 0.0001#设置默认的编码间隔
     max_length = 0 #序列的最大长度
     mean_length = 0 #序列的平均长度
-    coding_w = []  #元素的数据编码,字符串的形式eg.10010010001...
-    coding_q = []  #将序列弄成相同的维度，二值向量的序列[0,1,1,0,...]
-    coding_number_distribution = []                #在特定步长中纺锤波的个数分布(长度可能不一致)
-    coding_number_distribution_isometic = []       #纺锤波个数分布的对齐操作
+    coding_w = []  #元素的数据编码
+    coding_q = []  #将序列弄成相同的维度
 
-    def __init__(self, path="datasets", step=0.002 ):
+    def __init__(self, path="datasets", step=0.0001 ):
         self.path = path
         self.step =step
         self.clear_info()  #将之前旧的数据处理掉
         self.paths, self.labels = self.get_data_labels()   #获得路径以及标签
-        self.coding_setting()
+        self.coding()
 
     def clear_info(self):
         self.paths.clear()
@@ -43,23 +39,6 @@ class SpindleData:
         self.data.clear()
         self.coding_w.clear()
         self.coding_q.clear()
-
-    def get_spindle_number_distribution(self, ismax_length=True):
-        code_list = []
-        for index, d in enumerate(self.data):
-            code = num_coding(d, self.step)
-            code_list.append(np.asarray(code))
-            print("正在统计第%d数据:%s的相关信息" % (index, self.names[index]))
-        self.coding_number_distribution = code_list
-        if ismax_length:
-            code_length = max([len(x) for x in code_list])
-            print("max_length:%d" % code_length)
-        else:
-            code_length = int(np.mean(np.asarray([len(x) for x in code_list])))  #长度设置为均值
-            print("mean_length:%d" % code_length)
-        code_final = preprocessing.sequence.pad_sequences(code_list, maxlen=code_length)
-        self.coding_number_distribution_isometic = code_final    #个数分布的对齐操作
-        return self.coding_number_distribution
 
     def get_data_labels(self):  # 返回获取的数据以及标签[0,1,0,1,...]  "./datasets/"
         path = self.path
@@ -78,7 +57,8 @@ class SpindleData:
         labels = np.asarray(labels)                  #将标签转化为np的格式
         return paths, labels   #获取的是全部的文件路径
 
-    def coding_setting(self):#所有的数据读取以及存储(这里保存了数据的原始数据占用内存可能比较大)
+    def coding(self):#所有的数据读取以及存储(这里保存了数据的原始数据占用内存可能比较大)
+        coding_q = []
         del_list = []
         sub_cases = 0   #统计病人删选的个数
         sun_control = 0  #统计正常人删选的个数
@@ -99,11 +79,7 @@ class SpindleData:
         self.cases_n -= sub_cases        #减去被删选的数
         self.controls_n -= sun_control   #增加被删选的数
         print("cases_number:%d, controls_number:%d" % (self.cases_n, self.controls_n))
-        self.labels = [x for i, x in enumerate(self.labels) if i not in del_list]  #去除掉对应的标签
-        self.names = [x.split("\\")[-1] for i, x in enumerate(self.paths) if i not in del_list]   #windows 下的文件名称提取
-
-    def set_bit_coding(self):     #二进制的编码
-        coding_q = []
+        self.labels = [x for x in self.labels if x not in del_list]  #去除掉对应的标签
         for i, d in enumerate(self.data):
             code = bit_coding(d, step=self.step)
             print("正在对第%d个序列进行编码..." %(i+1))
@@ -143,8 +119,8 @@ class SpindleData:
         f = open("./data/cases_encoding_str.txt", 'w', encoding="UTF-8")
         fp = open("./data/controls_encoding_str.txt", 'w', encoding="UTF-8")
         for index, p in enumerate(self.coding_q):
-            name = self.paths[index].split('\\')[-1]  #Windows系统下的路径
-            # name = self.paths[index].split('/')[-1]  #Mac 下的文件路径
+            # name = self.paths[index].split('\\')[-1]  Windows系统下的路径
+            name = self.paths[index].split('/')[-1]  #Mac 下的文件路径
             if index < self.cases_n:
                 f.write(name + ":")
                 str_a = SpindleData.trans_list_str(p)
@@ -160,8 +136,7 @@ class SpindleData:
         print("Writing Success!!!")
 
 
-#基于个数的二进制编码
-def bit_coding(data, step): #对一个数据进行二进制编码的实现方法,data:一个病人的序列信息 step:所选择步长
+def bit_coding(data, step): #对一个数据进行二进制编码的实现方法
     code = []
     pre_data = 0
     count = 0
@@ -178,46 +153,6 @@ def bit_coding(data, step): #对一个数据进行二进制编码的实现方法
         pre_data = data[count]
         count += 1
     return code
-
-#----------------------------------------------一个独立的模块用来处理亚型---------------------------------------------
-
-
-
-#基于个数分布的编码方式
-def num_coding(data, step):
-    code = []
-    pre_flag = step #表示的是前步节点
-    count = 0
-    write_count = 0                                    #每一个区间内的个数记录
-    length = len(data)
-    while count < length:
-        if data[count] > pre_flag:
-            code.append(write_count)
-            pre_flag += step         #提升它的上界
-            write_count = 0
-        else:
-            write_count += 1
-            count += 1
-    if write_count != 0:
-        code.append(write_count)
-    return code
-
-
-#两个长序列(相同维度)的乘法
-def multiply(data1, data2):
-    length = len(data1)
-    sum = 0
-    for index in range(length):
-        sum += data1[index] * data2[index]
-    return sum
-
-
-#余弦相似度的计算
-def cos(data1, data2):
-    d1 = multiply(data1, data2)
-    d2 = math.sqrt(multiply(data1, data1))*math.sqrt(multiply(data2,data2))
-    result = d1/d2
-    return result
 
 
 def draw(history):
@@ -242,38 +177,31 @@ def draw(history):
     plt.show()
 
 
-# def get_all_paths(path):
-#     cate = [(os.path.join(path, x)) for x in os.listdir(path)]
-#     paths = []
-#     for i, p in enumerate(cate):
-#         path_tmps = glob.glob(os.path.join(p, "*.csv"))
-#         for p in path_tmps:
-#             paths.append(p)
-#     return paths
+def get_all_paths(path):
+    cate = [(os.path.join(path, x)) for x in os.listdir(path)]
+    paths = []
+    for i, p in enumerate(cate):
+        path_tmps = glob.glob(os.path.join(p, "*.csv"))
+        for p in path_tmps:
+            paths.append(p)
+    return paths
 
 
-# def get_all_data(paths):
-#     data = []
-#     for p in paths:
-#         d = pd.read_csv(p, seq=",", skiprows=(0, 1))
-#         data.append(d)
-#         print("Reading %d file" % (paths.index(p)+1))
-#     return data
+def get_all_data(paths):
+    data = []
+    for p in paths:
+        d = pd.read_csv(p, seq=",", skiprows=(0, 1))
+        data.append(d)
+        print("Reading %d file" % (paths.index(p)+1))
+    return data
 
 
-# def test(): #这里是测试方
-    # spindle = SpindleData(step=0.002)
-    # spindle.writing_coding_str()
-    # spindle = SpindleData(step=0.25)
-    # code = spindle.get_spindle_number_distribution()
-    # code_max_length = max([len(x) for x in code])
-    # code_final = preprocessing.sequence.pad_sequences(code, maxlen=code_max_length)
-    # print(code)
-    # print(code_final)
-    # result = cos(code_final[0], code_final[1])
-    # print(result)
-    # return True
+def test(): #这里是测试方
+    spindle = SpindleData(step=0.002)
+    spindle.writing_coding_str()
+    return True
 
 
-
+if __name__ == '__main__':
+    test()
 

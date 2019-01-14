@@ -169,7 +169,8 @@ def test(flag="total"):  # 这里是测试方法
         t = r * (i + 1)
         path = "datasets"
         spindle = SpindleData(step=t, path=path)
-        spindle.set_sub_type_coding()    #添加了亚型特征
+        # spindle.set_sub_type_coding()    #添加了亚型特征
+        spindle.set_bit_coding()
         # print("length:%f" % spindle.mean_length)   #显示的是用平均值长度还是使用最大长度
         print("length:%f" % spindle.max_length)
         spindle.writing_coding_str()
@@ -275,15 +276,15 @@ def get_top_data():
 
 
 # 主要是为了解决数据的稀疏性问题，指定一个K值，在这个K的基础上进行数据零的压缩，压缩可能会导致长度的不一致
-def str_compression(data, k=8):
+def str_compression(data, k=5):
     result = ""
     count = 0
     for d in data:
         if d == "0" and count < k:
             count += 1
         else:
-            if d == "1" and count > 0:
-                result += "0" * count + "1"
+            if d != "0" and count > 0:
+                result += "0" * count + d
                 count = 0
             else:
                 count = 0
@@ -293,19 +294,18 @@ def str_compression(data, k=8):
 
 # ----------------------------------------------修改K的简单稀疏编码-------------------------------------------
 # 简单稀疏编码的策略:1.当一同出现了超过k个0的时候我就手动的添加k-1个0
-def new_str_compression(data, k=8):
+def new_str_compression(data, k=15):
     result = ""
     count = 0
     for d in data:
         if d == "0":
             count += 1
         else:
-            if d == "1":
-                if count >= 5:
-                    result += "0"*(k-1)+"1"
-                else:
-                    result += "0"*count+"1"
-                count = 0
+            if count >= 5:
+                result += "0" * (k - 1) + d
+            else:
+                result += "0" * count + d
+            count = 0
     if count >= k:
         result += "0"*(k-1)
     else:
@@ -314,8 +314,8 @@ def new_str_compression(data, k=8):
 
 
 def run_top_acc():  # 按照特定的规则生成代表性的字符串
-    top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
-    test()
+    # top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
+    test(flag="compression")
 
 
 def test_str_compression():

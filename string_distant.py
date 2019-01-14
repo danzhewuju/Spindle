@@ -169,7 +169,7 @@ def test(flag="total"):  # 这里是测试方法
         t = r * (i + 1)
         path = "datasets"
         spindle = SpindleData(step=t, path=path)
-        spindle.set_bit_coding()
+        spindle.set_sub_type_coding()    #添加了亚型特征
         # print("length:%f" % spindle.mean_length)   #显示的是用平均值长度还是使用最大长度
         print("length:%f" % spindle.max_length)
         spindle.writing_coding_str()
@@ -314,7 +314,7 @@ def new_str_compression(data, k=8):
 
 
 def run_top_acc():  # 按照特定的规则生成代表性的字符串
-    # top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
+    top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
     test()
 
 

@@ -339,14 +339,14 @@ def draw(history):
 # print(result)
 # return True
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 #     # name = "membership_mros-visit1-aa0121.csv"
 #     # data = sub_type_spindle("sub_spindle_type")
 #     # print(list(data[name]))
 #     # test = [2, 10, 15, 16, 20]
 #     # sub_data = [1, 5, 4, 3, 3]
 #     # print(sub_type_coding(test,sub_data, step=2))
-#     spindle = SpindleData(step=0.002)
-#     spindle.set_sub_type_coding()
-#     # print(spindle.coding_q[0])
-#     spindle.writing_coding_str()
+    spindle = SpindleData(step=0.002)
+    spindle.set_sub_type_coding()
+    # print(spindle.coding_q[0])
+    spindle.writing_coding_str()

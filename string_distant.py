@@ -182,13 +182,15 @@ def same_length_string(data, k):   #将字符串转化为相同的长度，将�
 
 
 def test(flag="total"):  # 这里是测试方法
-    m = 1
+    m = 10
     n = 5
     r = 0.002  # 程序的最优化的选择
     starttime = time.time()
     for i in range(m):
         print("this is %d testing" % (i + 1))
         t = r * (i + 1)
+        print("t=%f" % t)
+        # top_sample(t)
         path = "datasets"
         spindle = SpindleData(step=t, path=path)
         # spindle.set_sub_type_coding()    #添加了亚型特征
@@ -336,8 +338,8 @@ def new_str_compression(data, k=5):
 
 
 def run_top_acc():  # 按照特定的规则生成代表性的字符串
-    top_sample(ratio=0.4)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
-    test(flag="compression")
+    top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
+    test()
 
 
 def test_str_compression():

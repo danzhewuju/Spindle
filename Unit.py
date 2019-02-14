@@ -82,7 +82,8 @@ class SpindleData:
         sub_cases = 0  # 统计病人删选的个数
         sun_control = 0  # 统计正常人删选的个数
         for i, p in enumerate(self.paths):
-            data = pd.read_csv(p, skiprows=(0, 1), sep=",")
+            # data = pd.read_csv(p, skiprows=(0, 1), sep=",")#第一个数据集，格式不相同
+            data = pd.read_csv(p, sep=",")#第二个数据集
             if data.__len__() < filter_length:  # 过滤掉不满足的部分
                 del_list.append(i)  # 记录将要删除的标签位置
                 print("过滤掉了第%d个文件!" % (i + 1))
@@ -97,9 +98,11 @@ class SpindleData:
 
         self.cases_n -= sub_cases  # 减去被删选的数
         self.controls_n -= sun_control  # 增加被删选的数
-        print("cases_number:%d, controls_number:%d" % (self.cases_n, self.controls_n))
         self.labels = [x for i, x in enumerate(self.labels) if i not in del_list]  # 去除掉对应的标签
-        self.names = [x.split("\\")[-1] for i, x in enumerate(self.paths) if i not in del_list]  # windows 下的文件名称提取
+        # self.names = [x.split("\\")[-1] for i, x in enumerate(self.paths) if i not in del_list]  # windows 下的文件名称提取
+        self.names = [x.split("/")[-1] for i, x in enumerate(self.paths) if i not in del_list]  #mac 下的文件名字的提取
+        print("cases_n:%d, controls_n:%d, total:%d"%(self.cases_n, self.controls_n, self.data.__len__()))
+        return True
 
     def set_bit_coding(self):  # 二进制的编码(0,1,1,1,1,1,0,0,0)
         coding_q = []
@@ -133,7 +136,8 @@ class SpindleData:
         f = open("./data/cases_encoding.txt", 'w', encoding="UTF-8")
         fp = open("./data/controls_encoding.txt", 'w', encoding="UTF-8")
         for index, p in enumerate(self.coding_w):
-            name = self.paths[index].split('\\')[-1]
+            # name = self.paths[index].split('\\')[-1]
+            name = self.paths[index].split('/')[-1] #mac 下的文件名的提取
             if index < self.cases_n:
                 f.write(name + " ")
                 f.writelines(str(p))
@@ -157,8 +161,8 @@ class SpindleData:
         f = open("./data/cases_encoding_str.txt", 'w', encoding="UTF-8")
         fp = open("./data/controls_encoding_str.txt", 'w', encoding="UTF-8")
         for index, p in enumerate(self.coding_q):
-            name = self.paths[index].split('\\')[-1]  # Windows系统下的路径
-            # name = self.paths[index].split('/')[-1]  #Mac 下的文件路径
+            # name = self.names[index]  # Windows系统下的路径
+            name = self.names[index]  #Mac 下的文件路径
             if index < self.cases_n:
                 f.write(name + ":")
                 str_a = SpindleData.trans_list_str(p)
@@ -347,6 +351,9 @@ if __name__ == '__main__':
 #     # sub_data = [1, 5, 4, 3, 3]
 #     # print(sub_type_coding(test,sub_data, step=2))
     spindle = SpindleData(step=0.002)
-    spindle.set_sub_type_coding()
+
+    # spindle.set_sub_type_coding()
+    spindle.set_bit_coding()
+
     # print(spindle.coding_q[0])
     spindle.writing_coding_str()

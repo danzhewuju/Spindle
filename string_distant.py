@@ -3,6 +3,7 @@ from Unit import SpindleData
 import Levenshtein
 import numpy as np
 import pandas as pd
+from unit.calculate_class_info import CA
 import keras.preprocessing as preprocessing
 
 ratio = 0.5  # 用于测试的比例
@@ -75,20 +76,40 @@ def calculate_distance():  # 计算距离的评价标准是和样本字符串进
     dim = len(data_controls[0])
     count_case = 0
     count_control = 0
+    '''Accuracy Precision Recall 的相关计算
+    precision=tp/(tp+fp)
+    recall=tp/(tp+fn)
+    '''
+    tp=fp=fn=tn=0
+
     for index in range(result_controls_distant.__len__()):
         if index < m:
             if result_cases_distant[index] > result_controls_distant[index]:
                 count_case += 1
+                tp += 1 #预测正确 p->p
+            else:
+                fn += 1 #p->n
             print("cases:", result_cases_distant[index], result_controls_distant[index])
         else:
             print("control:", result_cases_distant[index], result_controls_distant[index])
             if result_controls_distant[index] > result_cases_distant[index]:
                 count_control += 1
+                tn += 1 #n->n
+            else:
+                fp += 1
+
     f = open("data/result.csv", 'a', encoding="UTF-8")
     result = "%d,%.4f,%.4f,%.4f\n" % (dim, count_case / m, count_control / n, (count_case + count_control) / (m + n))
-    print(result)
+    # print(result)
     f.write(result)
     f.close()
+    accuracy, precision, recall = CA.caculate_apr(tp, fp, fn, tn)
+    result = "%d,%.4f,%.4f,%.4f\n" % (dim, accuracy, precision, recall)
+    print("%d,accuracy=%.4f,precision=%.4f,recall=%.4f\n" % (dim, accuracy, precision, recall))
+    result_save_path = "data/result_all.csv"
+    fp = open(result_save_path, 'a', encoding="UTF-8")
+    fp.write(result)
+    fp.close()
 
 
 def calculate_distance_compression():  # 计算距离的评价标准是和样本字符串进行比较(非压缩啊的版本)

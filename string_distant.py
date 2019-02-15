@@ -110,6 +110,7 @@ def calculate_distance():  # 计算距离的评价标准是和样本字符串进
     fp = open(result_save_path, 'a', encoding="UTF-8")
     fp.write(result)
     fp.close()
+    return True
 
 
 def calculate_distance_compression():  # 计算距离的评价标准是和样本字符串进行比较(非压缩啊的版本)
@@ -217,8 +218,8 @@ def same_length_string(data, k):   #将字符串转化为相同的长度，将�
 
 
 def test(flag="total"):  # 这里是测试方法
-    m = 1
-    n = 5
+    m = 10
+    n = 2
     r = 0.001  # 程序的最优化的选择
     starttime = time.time()
     for i in range(m):
@@ -374,7 +375,7 @@ def new_str_compression(data, k=5):
 
 def run_top_acc():  # 按照特定的规则生成代表性的字符串
     # top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
-    test()
+    test(flag="compression")
 
 
 def test_str_compression():

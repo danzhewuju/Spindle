@@ -359,7 +359,7 @@ def new_str_compression(data, k=5):
 
 
 def run_top_acc():  # 按照特定的规则生成代表性的字符串
-    top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
+    # top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
     test()
 
 

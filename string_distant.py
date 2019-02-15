@@ -6,7 +6,7 @@ import pandas as pd
 from unit.calculate_class_info import CA
 import keras.preprocessing as preprocessing
 
-ratio = 0.5  # 用于测试的比例
+ratio = 0.4  # 用于测试的比例
 
 
 # 用于统计相关信息
@@ -172,20 +172,34 @@ def calculate_distance_compression():  # 计算距离的评价标准是和样本
     dim = np.mean(np.asarray(dim_list))
     count_case = 0
     count_control = 0
+    tp = fp = fn = tn = 0  #计算得到accuracy,precision,recall 的相关数据
     for index in range(result_controls_distant.__len__()):
         if index < m:
             if result_cases_distant[index] > result_controls_distant[index]:
                 count_case += 1
+                tp += 1  # 预测正确 p->p
+            else:
+                fn += 1  # p->n
             print("cases:", result_cases_distant[index], result_controls_distant[index])
         else:
             print("control:", result_cases_distant[index], result_controls_distant[index])
             if result_controls_distant[index] > result_cases_distant[index]:
                 count_control += 1
+                tn += 1  # n->n
+            else:
+                fp += 1
     f = open("data/result.csv", 'a', encoding="UTF-8")
     result = "%d,%.4f,%.4f,%.4f\n" % (dim, count_case / m, count_control / n, (count_case + count_control) / (m + n))
-    print(result)
+    # print(result)
     f.write(result)
     f.close()
+    accuracy, precision, recall = CA.caculate_apr(tp, fp, fn, tn)
+    result = "%d,%.4f,%.4f,%.4f\n" % (dim, accuracy, precision, recall)
+    print("%d,accuracy=%.4f,precision=%.4f,recall=%.4f\n" % (dim, accuracy, precision, recall))
+    result_save_path = "data/result_all.csv"
+    fp = open(result_save_path, 'a', encoding="UTF-8")
+    fp.write(result)
+    fp.close()
     return True
 
 
@@ -203,9 +217,9 @@ def same_length_string(data, k):   #将字符串转化为相同的长度，将�
 
 
 def test(flag="total"):  # 这里是测试方法
-    m = 10
+    m = 1
     n = 5
-    r = 0.002  # 程序的最优化的选择
+    r = 0.001  # 程序的最优化的选择
     starttime = time.time()
     for i in range(m):
         print("this is %d testing" % (i + 1))

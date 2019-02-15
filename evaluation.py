@@ -34,5 +34,5 @@ def calculation_mean(data, path, key):   #对结果进行了数据的统计
 
 if __name__ == '__main__':
     path = "data/result.csv"
-    print(calculation_mean(read_info(path), "data/statistic.csv", 12))   #统计最优的字符串长度
+    print(calculation_mean(read_info(path), "data/statistic.csv", 13))   #统计最优的字符串长度
 

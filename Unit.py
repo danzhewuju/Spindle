@@ -10,6 +10,8 @@ import time
 import threading
 
 filter_length = 20  # 设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
+run_path = "data/mesa"    #程序运行的路径,实验结果的保存
+dataset_path = "datasets/mesa_dataset/"  #实验中原始数据存放位置
 
 
 class SpindleData:
@@ -29,7 +31,7 @@ class SpindleData:
     coding_number_distribution = []  # 在特定步长中纺锤波的个数分布(长度可能不一致)
     coding_number_distribution_isometic = []  # 纺锤波个数分布的对齐操作
 
-    def __init__(self, path="datasets", step=0.002):
+    def __init__(self, path=dataset_path, step=0.002):
         self.path = path
         self.step = step
         self.clear_info()  # 将之前旧的数据处理掉
@@ -82,8 +84,10 @@ class SpindleData:
         sub_cases = 0  # 统计病人删选的个数
         sun_control = 0  # 统计正常人删选的个数
         for i, p in enumerate(self.paths):
-            # data = pd.read_csv(p, skiprows=(0, 1), sep=",")#第一个数据集，格式不相同
-            data = pd.read_csv(p, sep=",")#第二个数据集
+            if dataset_path == "datasets/mesa_dataset/":
+                data = pd.read_csv(p, sep=",")  # 第二个数据集
+            else:
+                data = pd.read_csv(p, skiprows=(0, 1), sep=",")#第一个数据集，格式不相同
             if data.__len__() < filter_length:  # 过滤掉不满足的部分
                 del_list.append(i)  # 记录将要删除的标签位置
                 print("过滤掉了第%d个文件!" % (i + 1))
@@ -99,8 +103,8 @@ class SpindleData:
         self.cases_n -= sub_cases  # 减去被删选的数
         self.controls_n -= sun_control  # 增加被删选的数
         self.labels = [x for i, x in enumerate(self.labels) if i not in del_list]  # 去除掉对应的标签
-        # self.names = [x.split("\\")[-1] for i, x in enumerate(self.paths) if i not in del_list]  # windows 下的文件名称提取
-        self.names = [x.split("/")[-1] for i, x in enumerate(self.paths) if i not in del_list]  #mac 下的文件名字的提取
+        self.names = [x.split("\\")[-1] for i, x in enumerate(self.paths) if i not in del_list]  # windows 下的文件名称提取
+        # self.names = [x.split("/")[-1] for i, x in enumerate(self.paths) if i not in del_list]  #mac 下的文件名字的提取
         print("cases_n:%d, controls_n:%d, total:%d"%(self.cases_n, self.controls_n, self.data.__len__()))
         return True
 
@@ -133,8 +137,10 @@ class SpindleData:
         self.coding_q = np.asarray(code_q)
 
     def writer_coding(self):  # 将数据的原始编码写入到文件中（没有对齐的数据）
-        f = open("./data/cases_encoding.txt", 'w', encoding="UTF-8")
-        fp = open("./data/controls_encoding.txt", 'w', encoding="UTF-8")
+        f_path = run_path + "/cases_encoding.txt"
+        fp_path = run_path + "/controls_encoding.txt"
+        f = open(f_path, 'w', encoding="UTF-8")
+        fp = open(fp_path, 'w', encoding="UTF-8")
         for index, p in enumerate(self.coding_w):
             # name = self.paths[index].split('\\')[-1]
             name = self.paths[index].split('/')[-1] #mac 下的文件名的提取
@@ -158,11 +164,12 @@ class SpindleData:
         return str_a
 
     def writing_coding_str(self):  # 将对齐编码转化为字符串的形式，并写入到文件中
-        f = open("./data/cases_encoding_str.txt", 'w', encoding="UTF-8")
-        fp = open("./data/controls_encoding_str.txt", 'w', encoding="UTF-8")
+        f_path = run_path + "/cases_encoding_str.txt"
+        fp_path = run_path + "/controls_encoding_str.txt"
+        f = open(f_path, 'w', encoding="UTF-8")
+        fp = open(fp_path, 'w', encoding="UTF-8")
         for index, p in enumerate(self.coding_q):
-            # name = self.names[index]  # Windows系统下的路径
-            name = self.names[index]  #Mac 下的文件路径
+            name = self.names[index]
             if index < self.cases_n:
                 f.write(name + ":")
                 str_a = SpindleData.trans_list_str(p)
@@ -204,7 +211,7 @@ def bit_coding(data, step):  # 对一个数据进行二进制编码的实现方�
 '''
 
 
-def sub_type_spindle(path="sub_spindle_type"):  # "sub_spindle_type"
+def sub_type_spindle(path=run_path+"sub_spindle_type"):  # "sub_spindle_type"
     # 文件模块的读取
     cate = [os.path.join(path, x) for x in os.listdir(path)]
     cates = []

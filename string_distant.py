@@ -7,11 +7,12 @@ from unit.calculate_class_info import CA
 import keras.preprocessing as preprocessing
 
 ratio = 0.4  # 用于测试的比例
+compression_k = 1#压缩的k的选择
+run_path = "data/mesa"    #程序运行的路径,实验结果的保存
+dataset_path = "datasets/mesa_dataset/"  #实验中原始数据存放位置
 
 
 # 用于统计相关信息
-
-
 def calculate_distance():  # 计算距离的评价标准是和样本字符串进行比较(非压缩啊的版本)
     # -------------------------------------------基于全部数据的存储比较-------------------------------------------
     f = open("data/cases_encoding_str.txt", 'r', encoding="UTF-8")
@@ -103,16 +104,16 @@ def calculate_distance():  # 计算距离的评价标准是和样本字符串进
     # print(result)
     f.write(result)
     f.close()
-    accuracy, precision, recall = CA.caculate_apr(tp, fp, fn, tn)
-    result = "%d,%.4f,%.4f,%.4f\n" % (dim, accuracy, precision, recall)
-    print("%d,accuracy=%.4f,precision=%.4f,recall=%.4f\n" % (dim, accuracy, precision, recall))
-    result_save_path = "data/result_all.csv"
+    acc_n, acc_p, accuracy, precision, recall = CA.caculate_apr(tp, fp, fn, tn)
+    result = "%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f\n" % ("SM-uncompressed", dim, acc_n, acc_p,  accuracy, precision, recall)
+    print("%d,%.4f,%.4f,%.4f,%.4f,%.4f\n" % (dim, acc_n, acc_p, accuracy, precision, recall))
+    result_save_path = run_path+"/result_all.csv"
     fp = open(result_save_path, 'a', encoding="UTF-8")
     fp.write(result)
     fp.close()
 
 
-def calculate_distance_compression():  # 计算距离的评价标准是和样本字符串进行比较(非压缩啊的版本)
+def calculate_distance_compression():  # 计算距离的评价标准是和样本字符串进行比较(压缩啊的版本)
     # -------------------------------------------优化top选择比较------------------------------------------
     data_cases_top_tmp, data_controls_top_tmp = get_top_data()
     data_cases_top = [str_compression(x) for x in data_cases_top_tmp]
@@ -169,7 +170,7 @@ def calculate_distance_compression():  # 计算距离的评价标准是和样本
     result_cases_distant = np.asarray(result_cases_distant)
     result_controls_distant = np.asarray(result_controls_distant)
     dim_list = [len(x) for x in data_controls] + [len(x) for x in data_cases]
-    dim = np.mean(np.asarray(dim_list))
+    dim = np.max(np.asarray(dim_list))
     count_case = 0
     count_control = 0
     tp = fp = fn = tn = 0  #计算得到accuracy,precision,recall 的相关数据
@@ -193,10 +194,10 @@ def calculate_distance_compression():  # 计算距离的评价标准是和样本
     # print(result)
     f.write(result)
     f.close()
-    accuracy, precision, recall = CA.caculate_apr(tp, fp, fn, tn)
-    result = "%d,%.4f,%.4f,%.4f\n" % (dim, accuracy, precision, recall)
-    print("%d,accuracy=%.4f,precision=%.4f,recall=%.4f\n" % (dim, accuracy, precision, recall))
-    result_save_path = "data/result_all.csv"
+    print("tp=%d, fp=%d, fn=%d, tn=%d" % (tp, fp, fn, tn))
+    acc_n, acc_p, accuracy, precision, recall = CA.caculate_apr(tp, fp, fn, tn)
+    result = "%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f\n" % ("SM-compressed", dim, acc_n, acc_p,  accuracy, precision, recall)
+    result_save_path = run_path+"/result_all.csv"
     fp = open(result_save_path, 'a', encoding="UTF-8")
     fp.write(result)
     fp.close()
@@ -224,15 +225,15 @@ def test(flag="total"):  # 这里是测试方法
     for i in range(m):
         print("this is %d testing" % (i + 1))
         t = r * (i + 1)
-        print("t=%f" % t)
-        # top_sample(t)
-        path = "datasets"
+        print("t=%lf" % t)
+        path = dataset_path
         spindle = SpindleData(step=t, path=path)
         # spindle.set_sub_type_coding()    #添加了亚型特征
         spindle.set_bit_coding()
         # print("length:%f" % spindle.mean_length)   #显示的是用平均值长度还是使用最大长度
         print("length:%f" % spindle.max_length)
         spindle.writing_coding_str()
+        # top_sample()
         for j in range(n):
             print("this is %d running" % (j))
             if flag == "compression":  # 如果默认的情况下是直接采用完整的字符串
@@ -250,7 +251,7 @@ def top_sample(ratio=0.2):
     names_cases = []
     data_controls = []
     names_controls = []
-    path_cases = "data/cases_encoding_str.txt"
+    path_cases = run_path+"/cases_encoding_str.txt"
     f = open(path_cases, 'r', encoding="UTF-8")
     for line in f:
         data_cases.append(line.split(":")[-1])
@@ -268,7 +269,7 @@ def top_sample(ratio=0.2):
     number = int(data_cases.__len__() * ratio)
     # low = int(number*(0.5-ratio/2))
     # high = int(number*(0.5+ratio/2))  #用来取中位数
-    f = open("data/top_cases.csv", "w", encoding="UTF-8")
+    f = open(run_path+"/top_cases.csv", "w", encoding="UTF-8")
     first_line = "name,acc\n"
     f.write(first_line)
     for a in range(number):
@@ -276,7 +277,7 @@ def top_sample(ratio=0.2):
         print(result_tmp)
         f.write(result_tmp)
     f.close()
-    path_cases = "data/controls_encoding_str.txt"
+    path_cases = run_path+"/controls_encoding_str.txt"
     f = open(path_cases, 'r', encoding="UTF-8")
     for line in f:
         data_controls.append(line.split(":")[-1])
@@ -294,7 +295,7 @@ def top_sample(ratio=0.2):
     number = int(data_controls.__len__() * ratio)
     # low = int(number * (0.5 - ratio / 2))
     # high = int(number * (0.5 + ratio / 2))  # 用来取中位数
-    f = open("data/top_controls.csv", "w", encoding="UTF-8")
+    f = open(run_path+"/top_controls.csv", "w", encoding="UTF-8")
     first_line = "name,acc\n"
     f.write(first_line)
     for a in range(number):
@@ -309,15 +310,15 @@ def top_sample(ratio=0.2):
 def get_top_data():
     data_cases = []
     data_controls = []
-    path_top_cases = "data/top_cases.csv"
-    path_top_controls = "data/top_controls.csv"
+    path_top_cases = run_path + "/top_cases.csv"
+    path_top_controls = run_path + "/top_controls.csv"
     # 获取较好样本的名称
     data = pd.read_csv(path_top_cases, sep=',')
     name_top_cases = data["name"].tolist()
     data = pd.read_csv(path_top_controls, sep=',')
     name_top_controls = data["name"].tolist()
-    path_str_cases = "data/cases_encoding_str.txt"
-    path_str_controls = "data/controls_encoding_str.txt"
+    path_str_cases = run_path + "/cases_encoding_str.txt"
+    path_str_controls = run_path + "/controls_encoding_str.txt"
     f = open(path_str_cases, 'r', encoding="UTF-8")
     for line in f:
         line_data = line.split(":")
@@ -335,7 +336,7 @@ def get_top_data():
 
 
 # 主要是为了解决数据的稀疏性问题，指定一个K值，在这个K的基础上进行数据零的压缩，压缩可能会导致长度的不一致
-def str_compression(data, k=5):
+def str_compression(data, k=compression_k):
     result = ""
     count = 0
     for d in data:
@@ -360,7 +361,7 @@ def new_str_compression(data, k=5):
         if d == "0":
             count += 1
         else:
-            if count >= 5:
+            if count >= k:
                 result += "0" * (k - 1) + d
             else:
                 result += "0" * count + d
@@ -378,7 +379,7 @@ def run_top_acc():  # 按照特定的规则生成代表性的字符串
 
 
 def test_str_compression():
-    path = "data/cases_encoding_str.txt"
+    path =run_path + "/cases_encoding_str.txt"
     f = open(path, 'r', encoding="UTF-8")
     data = f.readline().split(":")[-1]
     f.close()

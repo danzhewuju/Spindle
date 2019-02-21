@@ -4,24 +4,30 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pylab as plt
 from tensorflow.examples.tutorials.mnist import input_data
+from sklearn.metrics import confusion_matrix,recall_score
 import pandas as pd
 import os
 import glob
-path = "./datasets/"
-feature = 90        #特征的数量
+run_path = "data/mesa"    #程序运行的路径,实验结果的保存
+dataset_path = "datasets/mesa_dataset/"  #实验中原始数据存放位置
+feature = 80        #特征的数量
+
 
 
 def get_distribution_Data(path, key):
     data_r = []
     for im in glob.glob(path + "/*.csv"):
-        data_f = pd.read_csv(im, sep=",", skiprows=(0, 1))
+        if dataset_path == "datasets/mesa_dataset/":
+            data_f = pd.read_csv(im, sep=",")  # 第二个数据集
+        else:
+            data_f = pd.read_csv(im, sep=",", skiprows=(0, 1))
         data_f = data_f[key]
         data_r.append(data_f)
     return data_r
 
 
 def static_spindle_distribution(path):
-    ratio = 0.2                                    #通过步长来控制，进行统计信息
+    step = 0.2                                    #通过步长来控制，进行统计信息
     key = "Time_of_night"
     data = get_distribution_Data(path, key)
     result = []
@@ -29,11 +35,11 @@ def static_spindle_distribution(path):
         max_n = max(tmp_d)
         data_count = np.zeros(feature)
         for d in tmp_d:
-            data_count[int(d / ratio)] += 1
+            data_count[int(d / step)] += 1
         result.append(data_count)
     length = feature
     print(length)
-    x_data = np.full((len(result), length), 0, np.int32 )
+    x_data = np.full((len(result), length), 0, np.int32)
     for row in range(len(result)):
         length = len(result[row])                                        #统一的量化标准（全部转化为相同的维度）
         x_data[row][:length] = result[row]
@@ -115,7 +121,7 @@ def deal_info(path):   #文件的处理，样本的优化             相关的�
 
 
 def run():
-    data, labels = deal_info(path)  # 数据处理以及标签，不同模式的数据处理
+    data, labels = deal_info(dataset_path)  # 数据处理以及标签，不同模式的数据处理
     print(data.shape[0])
     num_example = data.shape[0]
     arr = np.arange(num_example)
@@ -156,6 +162,7 @@ def run():
     sess = tf.Session()
     sess.run(init)
     avg_cost = 0
+    recall_accs = []
 
     for epoch in range(train_epochs):
         num_batch = np.int(train_data.__len__() / batch_size)
@@ -165,6 +172,9 @@ def run():
             batch_ys = train_labels[y_start:y_start + batch_size]
             x_start = x_start + batch_size
             y_start = y_start + batch_size
+
+            # recall_acc = recall_score(batch_xs.values, batch_ys)
+            # recall_accs.append(recall_acc)
             sess.run(optm, feed_dict={x: batch_xs, y: batch_ys})
             feeds = {x: batch_xs, y: batch_ys}
             avg_cost += sess.run(cost, feed_dict=feeds) / num_batch
@@ -175,8 +185,8 @@ def run():
             feeds_test = {x: test_data, y: test_labels}
             train_acc = sess.run(accr, feed_dict=feeds_train)
             test_acc = sess.run(accr, feed_dict=feeds_test)
-            print("Epoch: %03d/%03d cost:%.9f train_acc:%.3f test_acc:%.3f" % (epoch, train_epochs,
-                                                                               avg_cost, train_acc, test_acc))
+            print("Epoch: %03d/%03d cost:%.9f train_acc:%.3f test_acc:%.3f" % (epoch, train_epochs,avg_cost, train_acc, test_acc))
+            print(recall_accs)
 
 
 if __name__ == '__main__':

@@ -2,10 +2,12 @@
 from Unit import SpindleData
 from Unit import cos
 import numpy as np
-
+from unit.calculate_class_info import CA
+run_path = "data/mesa"    #程序运行的路径,实验结果的保存
+dataset_path = "datasets/mesa_dataset/"  #实验中原始数据存放位置
 
 #获得具有典型意义的特征 top=ratio
-def top_sample(spindle, ratio=1):
+def top_sample(spindle, ratio=0.2):
     spindle.get_spindle_number_distribution()
     data = spindle.coding_number_distribution_isometic
     data_cases = data[:spindle.cases_n]
@@ -60,8 +62,9 @@ def top_sample(spindle, ratio=1):
 
 
 #进行随机的测试
-def test_class(spindle, ratio=1):
+def test_class(spindle, ratio=0.2):
     cases_top_samples, control_top_samples =top_sample(spindle)
+    # print(str(cases_top_samples[0]))
     data_cases = spindle.coding_number_distribution_isometic[:spindle.cases_n]
     data_controls = spindle.coding_number_distribution_isometic[spindle.cases_n:]
 
@@ -74,6 +77,7 @@ def test_class(spindle, ratio=1):
     test_queue = [data_cases[x] for x in test_cases] + [data_controls[x] for x in test_control]
     cases_count = 0
     controls_count = 0
+    tp = fp = fn = tn = 0
     for index, test in enumerate(test_queue):
         sum = 0
         for d in cases_top_samples:
@@ -87,35 +91,36 @@ def test_class(spindle, ratio=1):
         if index < m:
             if result_cases > result_control:
                 cases_count += 1
+                tp += 1  # 预测正确 p->p
+            else:
+                fn += 1  # p->n
         else:
             if result_control > result_cases:
                 controls_count += 1
+                tn += 1  # n->n
+            else:
+                fp += 1
     print("cases_count:%d, control_count:%d" % (cases_count, controls_count))
-    result = "%.4f,%.4f,%.4f" % (cases_count/m, controls_count/n, (cases_count + controls_count)/(m+n))
-    print("cases_acc:%.4f control_acc:%.4f total_acc:%.4f" % (cases_count/m, controls_count/n, (cases_count + controls_count)/(m+n)))
-    return result, (cases_count + controls_count)/(m+n)
+    acc_n, acc_p, accuracy, precision, recall = CA.caculate_apr(tp, fp, fn, tn)
+    result = "%s,%lf,%.4f,%.4f,%.4f,%.4f,%.4f\n" % ("ND", spindle.step, acc_n, acc_p, accuracy, precision, recall)
+    print(result)
+    result_save_path = run_path+ "/result_all.csv"
+    fp = open(result_save_path, 'a', encoding="UTF-8")
+    fp.write(result)
+    fp.close()
+
 
 
 def test():
-    path = "data/result_distribution.csv"
-    step = 0.45
-    m = 1
-    n = 10
-    f = open(path, 'a', encoding="UTF-8")
+    path = run_path + "/result_distribution.csv"
+    m = 10
+    n = 3
     for i in range(m):
-        step = 0.55
+        step = 0.05*(i+1)
         sum = 0
         for j in range(n):
             spindle = SpindleData(step=step)
-            result, sum_t = test_class(spindle)
-            sum += sum_t
-            result = str(j+1)+","+str(step) + "," + result + "\n"
-            f.write(result)
-        result_mean_acc = sum / n
-        print("step:%.4f, mean_acc:%.4f" % (step, result_mean_acc))
-    f.close()
-
-    print("")
+            test_class(spindle)
 
 
 if __name__ == '__main__':

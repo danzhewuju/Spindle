@@ -9,7 +9,7 @@ import Levenshtein
 import time
 import threading
 
-filter_length = 20  # 设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
+filter_length = 10  # 设置过滤条件，数据小与这个值将会被过滤，主要是纺锤波的个数小于这个值就会这个病例就会被淘汰
 run_path = "data/mesa"    #程序运行的路径,实验结果的保存
 dataset_path = "datasets/mesa_dataset/"  #实验中原始数据存放位置
 
@@ -32,9 +32,9 @@ class SpindleData:
     coding_number_distribution_isometic = []  # 纺锤波个数分布的对齐操作
 
     def __init__(self, path=dataset_path, step=0.002):
+        self.clear_info()  # 将之前旧的数据处理掉
         self.path = path
         self.step = step
-        self.clear_info()  # 将之前旧的数据处理掉
         self.paths, self.labels = self.get_data_labels()  # 获得路径以及标签
         self.coding_setting()
 
@@ -357,7 +357,7 @@ if __name__ == '__main__':
 #     # test = [2, 10, 15, 16, 20]
 #     # sub_data = [1, 5, 4, 3, 3]
 #     # print(sub_type_coding(test,sub_data, step=2))
-    spindle = SpindleData(step=0.002)
+    spindle = SpindleData(step=0.001)
 
     # spindle.set_sub_type_coding()
     spindle.set_bit_coding()

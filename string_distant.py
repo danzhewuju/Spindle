@@ -6,8 +6,8 @@ import pandas as pd
 from unit.calculate_class_info import CA
 import keras.preprocessing as preprocessing
 
-ratio = 0.4  # 用于测试的比例
-compression_k = 1#压缩的k的选择
+ratio = 0.2  # 用于测试的比例
+compression_k = 1   #压缩的k的选择
 run_path = "data/mesa"    #程序运行的路径,实验结果的保存
 dataset_path = "datasets/mesa_dataset/"  #实验中原始数据存放位置
 
@@ -49,7 +49,7 @@ def calculate_distance():  # 计算距离的评价标准是和样本字符串进
     ratio_cases = np.random.randint(0, data_cases.__len__(), int(ratio * data_cases.__len__()))  # 选取20%进行测试
     ratio_control = np.random.randint(0, data_controls.__len__(), int(ratio * data_controls.__len__()))
     print("ratio_cases(count):{}, ratio_controls(count){}".format(ratio_cases.__len__(), ratio_control.__len__()))
-    m = ratio_cases.__len__();
+    m = ratio_cases.__len__()
     n = ratio_control.__len__()
 
     Detection_queue = [data_cases[x] for x in ratio_cases] + [data_controls[x] for x in ratio_control]
@@ -219,7 +219,7 @@ def same_length_string(data, k):   #将字符串转化为相同的长度，将�
 
 def test(flag="total"):  # 这里是测试方法
     m = 1
-    n = 5
+    n = 3
     r = 0.001  # 程序的最优化的选择
     starttime = time.time()
     for i in range(m):
@@ -373,11 +373,6 @@ def new_str_compression(data, k=5):
     return result
 
 
-def run_top_acc():  # 按照特定的规则生成代表性的字符串
-    # top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
-    test()
-
-
 def test_str_compression():
     path =run_path + "/cases_encoding_str.txt"
     f = open(path, 'r', encoding="UTF-8")
@@ -388,6 +383,11 @@ def test_str_compression():
     data_com = new_str_compression(data)
     print(data_com)
     print("data_com:%d" % (data_com.__len__()))
+
+
+def run_top_acc():  # 按照特定的规则生成代表性的字符串
+    # top_sample(ratio=0.2)    #这个只需要运行一次就行主要是生成top_cases.csv,top_controls.csv文件
+    test(flag="compression")
 
 
 if __name__ == '__main__':
